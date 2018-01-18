@@ -11,8 +11,5 @@ class TestApplication(unittest.TestCase):
         res = self.app.get('/ping')
         self.assertEqual(res.data, '{"hello": "world"}')
 
-    # def test_fetch_data_from_content_server(self):
-    #     content_server_url = "http://live-test-scores.herokuapp.com/scores"
-    #     # self.app.fetch_data_from_content_server()
 if __name__ == '__main__':
     unittest.main()
