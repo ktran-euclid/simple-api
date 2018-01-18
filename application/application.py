@@ -63,3 +63,17 @@ def student_profile(name):
         total_score += float(v)
     avg_score = total_score / len(entries)
     return render_template('student_profile.html', entries=entries, student_id=name, avg_score=avg_score)
+
+@app.route('/exams', methods=['GET'])
+def exams():
+    exams = exams_cache.keys()
+    return render_template('exam.html', exams=exams)
+
+@app.route('/exams/<exam_id>', methods=['GET'])
+def exams_id(exam_id):
+    entries = exams_cache.hgetall(exam_id)
+    total_score = 0
+    for k,v in entries.iteritems():
+        total_score += float(v)
+    avg_score = total_score / len(entries)
+    return render_template('exam_id.html', entries=entries, exam_id=exam_id, avg_score=avg_score)
