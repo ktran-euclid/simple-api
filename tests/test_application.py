@@ -9,6 +9,7 @@ class TestApplication(unittest.TestCase):
         self.app = application.app.test_client()
         self.students_score_cache = StrictRedis(host='localhost', port=6379, db=1)
         self.students_score_cache.hset('test_student_id', 'exam_01', '9.0')
+        self.students_score_cache.hset('test_student_id', 'exam_02', '7.0')
 
     def tearDown(self):
         self.students_score_cache.delete('test_student_id')
@@ -19,7 +20,8 @@ class TestApplication(unittest.TestCase):
 
     def test_student_profile(self):
         res = self.app.get('students/test_student_id')
-        self.assertEqual(res.data, '{"exam_01": "9.0"}')
+        assert "exam_02" in res.data
+        assert "7.0" in res.data
 
 if __name__ == '__main__':
     unittest.main()

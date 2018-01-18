@@ -1,5 +1,5 @@
 # 3rd party libraries
-from flask import Flask, request, session, g
+from flask import Flask, render_template, request, session
 import json
 import os
 import pprint
@@ -10,7 +10,7 @@ import time
 # other imports
 from celery_worker import make_celery
 
-app = Flask('ScoreApplication') # create the application instance :)
+app = Flask(__name__) # create the application instance :)
 app.config.from_object(__name__) # load config from this file , application.py
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
@@ -56,4 +56,9 @@ def students():
 
 @app.route('/students/<name>', methods=['GET'])
 def student_profile(name):
-    return json.dumps(students_score_cache.hgetall(name))
+    entries = students_score_cache.hgetall(name)
+    total_score = 0
+    for k,v in entries.iteritems():
+        total_score += float(v)
+    avg_score = total_score / len(entries)
+    return render_template('student_profile.html', entries=entries, student_id=name, avg_score=avg_score)
