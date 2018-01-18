@@ -65,6 +65,6 @@ def ping():
 def students():
     return json.dumps(students_score_cache.keys())
 
-@app.route('/students/id', methods=['GET'])
-def students():
-    return json.dumps(students_score_cache.keys())
+@app.route('/students/<name>', methods=['GET'])
+def student_profile(name):
+    return json.dumps(students_score_cache.hgetall(name))
