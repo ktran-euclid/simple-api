@@ -1,0 +1,9 @@
+<!doctype html>
+<title>List of Exams</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<div class=page>
+  <h2>Exams taken place so far</h2>
+  {% for exam_id in exams %}
+    <div class=flash><a href="exams/{{ exam_id }}">{{ exam_id }}</a></div>
+  {% endfor %}
+</div>

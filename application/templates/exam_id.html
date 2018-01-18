@@ -1,0 +1,10 @@
+<!doctype html>
+<title>Exam Results</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<div class=page>
+  <h2>All students results for exam: {{ exam_id }}</h2>
+  <h4>Average Score: {{ avg_score }}</h4>
+  {% for student, score in entries.iteritems() %}
+    <div class=flash>Student {{ student }}: {{ score }}</div>
+  {% endfor %}
+</div>

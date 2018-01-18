@@ -1,0 +1,9 @@
+<!doctype html>
+<title>List of Students</title>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<div class=page>
+  <h2>Students who have taken exams so far</h2>
+  {% for student_name in students %}
+    <div class=flash><a href="students/{{ student_name }}">{{ student_name }}</a></div>
+  {% endfor %}
+</div>
