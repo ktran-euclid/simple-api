@@ -1,12 +1,14 @@
 # all the imports
 
 from celery import Celery
-from flask import Flask, request, session, g, redirect, url_for, abort, \
-     render_template, flash
+from flask import Flask, request, session, g
 import json
 import os
 import pprint
+from redis import Redis, StrictRedis
 import sseclient
+import time
+
 
 app = Flask('ScoreApplication') # create the application instance :)
 app.config.from_object(__name__) # load config from this file , application.py
@@ -28,11 +30,10 @@ def make_celery(app):
     celery.Task = ContextTask
     return celery
 
-
-STUDENTS_SCORE = {}
-EXAMS = {}
-
 celery = make_celery(app)
+students_score_cache = StrictRedis(host='localhost', port=6379, db=1)
+exams_cache = StrictRedis(host='localhost', port=6379, db=2)
+
 @celery.task
 def fetch_data_from_content_server():
     #0. connect to content server and load its data to memory
@@ -45,20 +46,15 @@ def fetch_data_from_content_server():
     response = with_requests(content_server_url)
     client = sseclient.SSEClient(response)
 
-    #1. save data to global var
-    global STUDENTS_SCORE
-    global EXAMS
     for event in client.events():
         row = json.loads(event.data)
+        students_score_cache.hset(row.get('studentId'), row.get('exam'), row.get('score'))
+        exams_cache.hset(row.get('exam'), row.get('studentId'), row.get('score'))
         print row
-        STUDENTS_SCORE[row.get('studentId')] = {
-            'exam': row.get('exam'),
-            'score': row.get('score')
-        }
-        EXAMS[row.get('exam')] = {
-            'student': row.get('studentId'),
-            'score': row.get('score')
-        }
+
+@app.before_first_request
+def before_first_request():
+    fetch_data_from_content_server.delay()
 
 @app.route('/ping', methods=['GET'])
 def ping():
@@ -67,8 +63,8 @@ def ping():
 
 @app.route('/students', methods=['GET'])
 def students():
-    return json.dumps(STUDENTS_SCORE.keys())
+    return json.dumps(students_score_cache.keys())
 
-@app.before_first_request
-def fetch_data():
-    fetch_data_from_content_server.delay()
+@app.route('/students/id', methods=['GET'])
+def students():
+    return json.dumps(students_score_cache.keys())
