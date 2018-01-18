@@ -29,12 +29,10 @@ def make_celery(app):
     return celery
 
 
-celery = make_celery(app)
-@app.route('/students', methods=['GET'])
-def ping():
-    """Test if server is alive"""
-    return json.dumps({'hello': 'world'})
+STUDENTS_SCORE = {}
+EXAMS = {}
 
+celery = make_celery(app)
 @celery.task
 def fetch_data_from_content_server():
     #0. connect to content server and load its data to memory
@@ -46,8 +44,30 @@ def fetch_data_from_content_server():
     content_server_url = "http://live-test-scores.herokuapp.com/scores"
     response = with_requests(content_server_url)
     client = sseclient.SSEClient(response)
+
+    #1. save data to global var
+    global STUDENTS_SCORE
+    global EXAMS
     for event in client.events():
-        print json.loads(event.data)
+        row = json.loads(event.data)
+        print row
+        STUDENTS_SCORE[row.get('studentId')] = {
+            'exam': row.get('exam'),
+            'score': row.get('score')
+        }
+        EXAMS[row.get('exam')] = {
+            'student': row.get('studentId'),
+            'score': row.get('score')
+        }
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    """Test if server is alive"""
+    return json.dumps({'hello': 'world'})
+
+@app.route('/students', methods=['GET'])
+def students():
+    return json.dumps(STUDENTS_SCORE.keys())
 
 @app.before_first_request
 def fetch_data():

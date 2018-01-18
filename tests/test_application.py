@@ -8,7 +8,7 @@ class TestApplication(unittest.TestCase):
         self.app = application.app.test_client()
 
     def test_ping(self):
-        res = self.app.get('/students')
+        res = self.app.get('/ping')
         self.assertEqual(res.data, '{"hello": "world"}')
 
     # def test_fetch_data_from_content_server(self):
