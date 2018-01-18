@@ -1,15 +1,16 @@
-import flaskr
+import application
 import os
 import unittest
 
 class TestApplication(unittest.TestCase):
     def setUp(self):
-        self.app = FlaskAPI(__name__)
+        application.app.testing = True
+        self.app = application.app.test_client()
 
     def test_students(self):
         res = self.app.get('/students')
-        import pdb; pdb.set_trace()
-        
+        self.assertEqual(res.data, '{"hello": "world"}')
+
 
 if __name__ == '__main__':
     unittest.main()
