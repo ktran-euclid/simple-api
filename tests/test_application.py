@@ -22,6 +22,13 @@ class TestApplication(unittest.TestCase):
         res = self.app.get('students/test_student_id')
         assert "exam_02" in res.data
         assert "7.0" in res.data
+        assert "exam_01" in res.data
+        assert "9.0" in res.data
+        assert "8.0" in res.data
+
+    def test_student(self):
+        res = self.app.get('students')
+        assert "test_student_id" in res.data
 
 if __name__ == '__main__':
     unittest.main()

@@ -52,7 +52,8 @@ def ping():
 
 @app.route('/students', methods=['GET'])
 def students():
-    return json.dumps(students_score_cache.keys())
+    students = students_score_cache.keys()
+    return render_template('student.html', students=students)
 
 @app.route('/students/<name>', methods=['GET'])
 def student_profile(name):
