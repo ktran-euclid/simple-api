@@ -32,6 +32,13 @@ class TestApplication(unittest.TestCase):
         assert "9.0" in res.data
         assert "8.0" in res.data
 
+    def test_student_profile_with_param_filter(self):
+        res = self.app.get('students/test_student_id?exam_id=exam_01')
+        assert "exam_01" in res.data
+        assert "9.0" in res.data
+        assert "8.0" in res.data
+        assert "exam_02" not in res.data
+
     def test_student(self):
         res = self.app.get('students')
         assert "test_student_id" in res.data
@@ -44,9 +51,16 @@ class TestApplication(unittest.TestCase):
     def test_exams_id(self):
         res = self.app.get('exams/exam_01')
         assert "test_student_id" in res.data
+        assert "test_student_id_2" in res.data
         assert "7.0" in res.data
         assert "9.0" in res.data
         assert "8.0" in res.data
+
+    def test_exams_id_with_param(self):
+        res = self.app.get('exams/exam_01?student_name=test_student_id')
+        assert "test_student_id" in res.data
+        assert "9.0" in res.data
+        assert "test_student_id_2" not in res.data
 
 if __name__ == '__main__':
     unittest.main()

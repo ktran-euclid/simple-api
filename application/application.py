@@ -62,6 +62,11 @@ def student_profile(name):
     for k,v in entries.iteritems():
         total_score += float(v)
     avg_score = total_score / len(entries)
+
+    # extra filter
+    exam_id = request.args.get('exam_id')
+    if exam_id:
+        entries = dict((k,v) for k,v in entries.iteritems() if k == exam_id)
     return render_template('student_profile.html', entries=entries, student_id=name, avg_score=avg_score)
 
 @app.route('/exams', methods=['GET'])
@@ -76,4 +81,12 @@ def exams_id(exam_id):
     for k,v in entries.iteritems():
         total_score += float(v)
     avg_score = total_score / len(entries)
+    exam_id = request.args.get('exam_id')
+    if exam_id:
+        entries = dict((k,v) for k,v in entries.iteritems() if k == exam_id)
+
+    # extra filter
+    student_name = request.args.get('student_name')
+    if student_name:
+        entries = dict((k,v) for k,v in entries.iteritems() if k == student_name)
     return render_template('exam_id.html', entries=entries, exam_id=exam_id, avg_score=avg_score)
