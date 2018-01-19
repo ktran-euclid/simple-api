@@ -46,21 +46,22 @@ That's it. Commit your solution to the provided GitHub repository (this one).  W
 
 This application has three main parts:
 1. A WSGI Flask application to serve as the REST API, responding to external requests
-2. A Celery application to execute background task such as fetching data from the given sse content server
-3. A Redis server being used by Celery to process tasks and also serves as a in memory database for a. and b.
+2. A Celery application to carry background tasks such as fetching data from the given sse content server
+3. A Redis server being used by Celery to process tasks and also serves as a in memory database for 1. and 2.
 
 In order to setup the testing environment and start a local server, please follow these steps:
+
 0. Install the components:
 
-    Flask
+  Flask
 
         pip install --editable .
 
-    Celery and Redis
+  Celery and Redis
 
         pip install -U "celery[redis]"
 
-    pytest watch for watching the test
+  pytest watch for watching the test
 
         pip install pytest-watch
 
