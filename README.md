@@ -45,20 +45,22 @@ That's it. Commit your solution to the provided GitHub repository (this one).  W
 ## Setup the application
 
 This application has three main parts:
-a. A WSGI Flask application to serve as the REST API, responding to external requests
-b. A Celery application to execute background task such as fetching data from the given sse content server
-c. A Redis server being used by Celery to process tasks and also serves as a in memory database for a. and b.
+1. A WSGI Flask application to serve as the REST API, responding to external requests
+2. A Celery application to execute background task such as fetching data from the given sse content server
+3. A Redis server being used by Celery to process tasks and also serves as a in memory database for a. and b.
 
+In order to setup the testing environment and start a local server, please follow these steps:
 0. Install the components:
+
     Flask
 
         pip install --editable .
 
-    Install Celery and Redis
+    Celery and Redis
 
         pip install -U "celery[redis]"
 
-    Install pytest watch for watching the test
+    pytest watch for watching the test
 
         pip install pytest-watch
 
@@ -70,7 +72,7 @@ c. A Redis server being used by Celery to process tasks and also serves as a in 
 
         ptw
 
-3. Start celery worker and watch their logs:
+3. On another window, start celery worker and watch their logs.  This worker is required to fetch data from content-server
 
         celery -A application.application.celery worker --loglevel=info
 
@@ -78,7 +80,7 @@ c. A Redis server being used by Celery to process tasks and also serves as a in 
 
         redis-cli
 
-should bring you to the right place. Database index 1 and 2 are stores where data from the content-server is being saved.  Database index 0 is what celery app uses to process tasks
+should bring you to the right place. Redis comes in default with 3 data store. Database index 1 and 2 are stores where data from the content-server is being saved.  Database index 0 is what celery app uses to process tasks
 
 5. And voila, your server is ready at 127.0.0.1:5000.  As requested in the documentation above, only 4 endpoints are available
 
