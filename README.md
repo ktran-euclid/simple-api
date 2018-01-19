@@ -11,11 +11,11 @@ Periodically, you'll receive a JSON payload that represents a student's test sco
         event: score
         data: {"exam": 3, "studentId": "foo", score: .991}
 
-This represents that student foo received a score of `.991` on exam #3. 
+This represents that student foo received a score of `.991` on exam #3.
 
-Your job is to build an application that consumes this data, processes it, and provides a simple REST API that exposes the processed results. 
+Your job is to build an application that consumes this data, processes it, and provides a simple REST API that exposes the processed results.
 
-You may build this application in any language or stack that you prefer. You may also use any open-source libraries or resources that you find helpful. 
+You may build this application in any language or stack that you prefer. You may also use any open-source libraries or resources that you find helpful.
 
 Here's the REST API we want you to build:
 
@@ -40,3 +40,56 @@ That said, we'd like you to cut some corners so we can focus on certain aspects 
 
 
 That's it. Commit your solution to the provided GitHub repository (this one).  When you come in, we'll pair with you and  walk through your solution and extend it in an interesting way.
+
+
+## Setup the application
+
+This application has three main parts:
+a. A WSGI Flask application to serve as the REST API, responding to external requests
+b. A Celery application to execute background task such as fetching data from the given sse content server
+c. A Redis server being used by Celery to process tasks and also serves as a in memory database for a. and b.
+
+0. Install the components:
+    Flask
+
+        pip install --editable .
+
+    Install Celery and Redis
+
+        pip install -U "celery[redis]"
+
+    Install pytest watch for watching the test
+
+        pip install pytest-watch
+
+1. To start the Flask application:
+
+        flask run
+
+2. On a separate window, to watch the test suite:
+
+        ptw
+
+3. Start celery worker and watch their logs:
+
+        celery -A application.application.celery worker --loglevel=info
+
+4. Optionally, we can check for redis service to see if data goes in there. If you install redis correctly
+
+        redis-cli
+
+should bring you to the right place. Database index 1 and 2 are stores where data from the content-server is being saved.  Database index 0 is what celery app uses to process tasks
+
+5. And voila, your server is ready at 127.0.0.1:5000.  As requested in the documentation above, only 4 endpoints are available
+
+        127.0.0.1:5000/students
+        127.0.0.1:5000/students/<student_name>
+        127.0.0.1:5000/exams/
+        127.0.0.1:5000/exams/<exam_id>
+
+6. I have added an extra filter to toggle the display. This filter should not affect average score
+
+        127.0.0.1:5000/students/<student_name>?exam_id=''
+        127.0.0.1:5000/exams/exam_id?student_name=''
+
+7. Pagination ?
