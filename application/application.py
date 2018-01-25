@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, session
 import json
 import os
 import pprint
-from redis import Redis, StrictRedis
+from redis import Redis
 import sseclient
 import time
 
