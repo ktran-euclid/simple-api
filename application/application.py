@@ -7,14 +7,17 @@ from redis import Redis, StrictRedis
 import sseclient
 import time
 
-# other imports
+# internal imports
 from celery_worker import make_celery
+from database import Database
 
 app = Flask(__name__) # create the application instance :)
 app.config.from_object(__name__) # load config from this file , application.py
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
 app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+app.score_cache = Database(index=1, redis_host='localhost')
+app.exams_cache = Database(index=2, redis_host='localhost')
 
 celery = make_celery(app)
 @celery.task
@@ -32,14 +35,21 @@ def fetch_data_from_content_server():
     for event in client.events():
         if event.event == 'score':
             row = json.loads(event.data)
-            students_score_cache.hset(row.get('studentId'), row.get('exam'), row.get('score'))
+            app.score_cache.save_entry(row.get('studentId'), row.get('exam'), row.get('score'))
             exams_cache.hset(row.get('exam'), row.get('studentId'), row.get('score'))
 
             # log to celery workers
             print row
 
-students_score_cache = StrictRedis(host='localhost', port=6379, db=1)
 exams_cache = StrictRedis(host='localhost', port=6379, db=2)
+
+def average_score(entries):
+    total_score = 0
+    if len(entries) == 0:
+        return 0
+    for k,v in entries.iteritems():
+        total_score += float(v)
+    return total_score / len(entries)
 
 @app.before_first_request
 def before_first_request():
@@ -52,16 +62,13 @@ def ping():
 
 @app.route('/students', methods=['GET'])
 def students():
-    students = students_score_cache.keys()
+    students = app.score_cache.keys()
     return render_template('student.html', students=students)
 
 @app.route('/students/<name>', methods=['GET'])
 def student_profile(name):
-    entries = students_score_cache.hgetall(name)
-    total_score = 0
-    for k,v in entries.iteritems():
-        total_score += float(v)
-    avg_score = total_score / len(entries)
+    entries = app.score_cache.get_entry(name)
+    avg_score = average_score(entries)
 
     # extra filter
     exam_id = request.args.get('exam_id')
@@ -77,10 +84,7 @@ def exams():
 @app.route('/exams/<exam_id>', methods=['GET'])
 def exams_id(exam_id):
     entries = exams_cache.hgetall(exam_id)
-    total_score = 0
-    for k,v in entries.iteritems():
-        total_score += float(v)
-    avg_score = total_score / len(entries)
+    avg_score = average_score(entries)
 
     # extra filter
     student_name = request.args.get('student_name')

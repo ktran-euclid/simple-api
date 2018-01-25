@@ -3,17 +3,20 @@ import os
 from redis import Redis, StrictRedis
 import unittest
 
+from application.database import Database
+
 class TestApplication(unittest.TestCase):
     def setUp(self):
         application.app.testing = True
         self.app = application.app.test_client()
-        self.students_score_cache = StrictRedis(host='localhost', port=6379, db=1)
-        self.exams_cache = StrictRedis(host='localhost', port=6379, db=2)
-        self.students_score_cache.hset('test_student_id', 'exam_01', '9.0')
-        self.students_score_cache.hset('test_student_id', 'exam_02', '7.0')
-        self.exams_cache.hset('exam_01', 'test_student_id', '9.0')
-        self.exams_cache.hset('exam_01', 'test_student_id_2', '7.0')
-        self.exams_cache.hset('exam_02', 'test_student_id', '7.0')
+        self.students_score_cache = Database(index=1, redis_host='localhost')
+        self.exams_cache = Database(index=2, redis_host='localhost')
+
+        self.students_score_cache.save_entry('test_student_id', 'exam_01', '9.0')
+        self.students_score_cache.save_entry('test_student_id', 'exam_02', '7.0')
+        self.exams_cache.save_entry('exam_01', 'test_student_id', '9.0')
+        self.exams_cache.save_entry('exam_01', 'test_student_id_2', '7.0')
+        self.exams_cache.save_entry('exam_02', 'test_student_id', '7.0')
 
     def tearDown(self):
         self.students_score_cache.delete('test_student_id')
