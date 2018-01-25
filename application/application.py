@@ -11,6 +11,7 @@ import time
 from celery_worker import make_celery
 from database import Database
 
+#0. intialize the application with database
 app = Flask(__name__) # create the application instance :)
 app.config.from_object(__name__) # load config from this file , application.py
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
@@ -19,6 +20,7 @@ app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 app.score_cache = Database(index=1, redis_host='localhost')
 app.exams_cache = Database(index=2, redis_host='localhost')
 
+#1. initialize background processing workers
 celery = make_celery(app)
 @celery.task
 def fetch_data_from_content_server():
@@ -41,16 +43,7 @@ def fetch_data_from_content_server():
             # log to celery workers
             print row
 
-exams_cache = StrictRedis(host='localhost', port=6379, db=2)
-
-def average_score(entries):
-    total_score = 0
-    if len(entries) == 0:
-        return 0
-    for k,v in entries.iteritems():
-        total_score += float(v)
-    return total_score / len(entries)
-
+#2. route
 @app.before_first_request
 def before_first_request():
     fetch_data_from_content_server.delay()
@@ -78,12 +71,12 @@ def student_profile(name):
 
 @app.route('/exams', methods=['GET'])
 def exams():
-    exams = exams_cache.keys()
+    exams = app.exams_cache.keys()
     return render_template('exam.html', exams=exams)
 
 @app.route('/exams/<exam_id>', methods=['GET'])
 def exams_id(exam_id):
-    entries = exams_cache.hgetall(exam_id)
+    entries = app.exams_cache.get_entry(exam_id)
     avg_score = average_score(entries)
 
     # extra filter
@@ -91,3 +84,12 @@ def exams_id(exam_id):
     if student_name:
         entries = dict((k,v) for k,v in entries.iteritems() if k == student_name)
     return render_template('exam_id.html', entries=entries, exam_id=exam_id, avg_score=avg_score)
+
+#3. interal function
+def average_score(entries):
+    total_score = 0
+    if len(entries) == 0:
+        return 0
+    for k,v in entries.iteritems():
+        total_score += float(v)
+    return total_score / len(entries)
