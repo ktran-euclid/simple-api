@@ -38,7 +38,7 @@ def fetch_data_from_content_server():
         if event.event == 'score':
             row = json.loads(event.data)
             app.score_cache.save_entry(row.get('studentId'), row.get('exam'), row.get('score'))
-            exams_cache.hset(row.get('exam'), row.get('studentId'), row.get('score'))
+            app.exams_cache.save_entry(row.get('exam'), row.get('studentId'), row.get('score'))
 
             # log to celery workers
             print row

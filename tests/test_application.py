@@ -4,8 +4,10 @@ from redis import Redis, StrictRedis
 import unittest
 
 from application.database import Database
+from application.application import average_score
 
-class TestApplication(unittest.TestCase):
+
+class IntegrationTest(unittest.TestCase):
     def setUp(self):
         application.app.testing = True
         self.app = application.app.test_client()
@@ -39,7 +41,7 @@ class TestApplication(unittest.TestCase):
         res = self.app.get('students/test_student_id?exam_id=exam_01')
         assert "exam_01" in res.data
         assert "9.0" in res.data
-        assert "8.0" in res.data
+        assert "8.0" in res.data # average_score
         assert "exam_02" not in res.data
 
     def test_student(self):
@@ -64,6 +66,16 @@ class TestApplication(unittest.TestCase):
         assert "test_student_id" in res.data
         assert "9.0" in res.data
         assert "test_student_id_2" not in res.data
+
+
+class UnitTest(unittest.TestCase):
+    def test_average_score(self):
+        entries = {
+            'exam_01': 9.0,
+            'exam_02': 7.0,
+            'exam_03': 8.0
+        }
+        self.assertEqual(average_score(entries), 8.0)
 
 if __name__ == '__main__':
     unittest.main()
